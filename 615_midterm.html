@@ -69,105 +69,78 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>#We have two FEMA Data, one is “FemaWebDisasterSummaries” and another is “DisasterDeclarationSummaries”.</p>
-<p>Here is the output for FemaWebDisasterSummaries.</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>
-
-VariableName                 Description                                                                                                                                                               
----------------------------  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-disasterNumber               a sequentially assigned number used to designate an event or incident declared as a disaster                                                                              
-totalNumberIaApproved        the number of disaster assistance applications that were approved for Individual Assistance (IA)                                                                          
-totalAmountIhpApproved       the total amount approved for the Individual and Households Program (IHP) in dollars                                                                                      
-totalAmountHaApproved        the total amount approved for Housing Assistance (HA) from the Individual and Households Program (IHP) in dollars                                                         
-totalAmountOnaApproved       the total amount approved for Other Needs Assistance (ONA) from the Individual and Households Program (IHP) in dollars                                                    
-totalObligatedAmountPa       the Public Assistance grant funding available in dollars to the grantee (State), for sub-grantee approved Project Worksheets                                              
-totalObligatedAmountCatAb    the Public Assistance grant funding available in dollars to the grantee (State), for sub-grantee approved Project Worksheets in categories A and B, or Emergency Work     
-totalObligatedAmountCatC2g   the Public Assistance grant funding available in dollars to the grantee (State), for sub-grantee approved Project Worksheets in categories C through G, or Permanent Work 
-paLoadDate                   the date the Public Assistance (PA) data was updated by NEMIS                                                                                                             
-iaLoadDate                   the date the Individual Assistance (IA) data was updated by NEMIS                                                                                                         
-totalObligatedAmountHmgp     the total amount obligated under the Hazard Mitigation Grant Program in dollars                                                                                           
-hash                         the MD5 hash of fields and values of the record                                                                                                                           
-lastRefresh                  the date the record was last updated in the API data store                                                                                                                
-id                           the unique ID assigned to the record                                                                                                                                      </code></pre>
-</div>
-</div>
-<p>Here is the output for DisasterDeclarationSummaries.</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>
-
-VariableName               Descrption                                                                                                                                                                                           
--------------------------  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-femaDeclarationString      Agency standard method for uniquely identifying Stafford Act declarations - Concatenation of declaration type, disaster number and state code                                                        
-disasterNumber             Sequentially assigned number used to designate an event or incident declared as a disaster                                                                                                           
-state                      The name or phrase describing the U.S. state, district, or territory                                                                                                                                 
-declarationType            Two character code that defines if this is a major disaster, fire management, or emergency declaration                                                                                               
-declarationDate            Two character code that defines if this is a major disaster, fire management, or emergency declaration                                                                                               
-fyDeclared                 Fiscal year in which the disaster was declared                                                                                                                                                       
-incidentType               Type of incident such as fire or flood                                                                                                                                                               
-declarationTitle           Title for the disaster                                                                                                                                                                               
-ihProgramDeclared          Denotes whether the Individuals and Households program was declared for this disaster                                                                                                                
-iaProgramDeclared          Denotes whether the Individual Assistance program was declared for this disaster                                                                                                                     
-paProgramDeclared          Denotes whether the Public Assistance program was declared for this disaster                                                                                                                         
-hmProgramDeclared          Denotes whether the Hazard Mitigation program was declared for this disaster                                                                                                                         
-incidentBeginDate          Date the incident itself began                                                                                                                                                                       
-incidentEndDate            Date the incident itself ended                                                                                                                                                                       
-disasterCloseoutDate       Date all financial transactions for all programs are completed                                                                                                                                       
-tribalRequest              Denotes that a declaration request was submitted directly to the President, independently of a state, by a Tribal Nation                                                                             
-fipsStateCode              FIPS two-digit numeric code used to identify the United States, the District of Columbia, US territories, outlying areas of the US and freely associated states                                      
-fipsCountyCode             FIPS three-digit numeric code used to identify counties and county equivalents in the United States, the District of Columbia, US territories, outlying areas of the US and freely associated states 
-placeCode                  A unique code system FEMA uses internally to recognize locations that takes the numbers '99' + the 3-digit county FIPS code                                                                          
-designatedArea             The name or phrase describing the geographic area that was included in the declaration                                                                                                               
-declarationRequestNumber   Number assigned to the declaration request                                                                                                                                                           
-lastIAFilingDate           Last date when IA requests can be filed. Data available after 1998 only                                                                                                                              
-lastRefresh                Date the record was last updated in the API data store                                                                                                                                               
-hash                       MD5 Hash of the fields and values of the record                                                                                                                                                      
-id                         MD5 Hash of the fields and values of the record                                                                                                                                                      </code></pre>
-</div>
-</div>
-<p>#Then we work on with our NOAA Data</p>
-<p>First, we identify the type of event_type relates to flood in data 2020.</p>
-<p>We choose “Flash Flood”, “Flood”, “Coastal Flood”, “Lakeshore Flood” as our new Event_type variable</p>
-<p>Then we check if all the data here has the Year equals 2020.</p>
-<p>We prove that all the values are in 2020</p>
-<p>Then we check which columns has value with all blank or NA, and clean it.</p>
-<p>We find “MAGNITUDE”, “MAGNITUDE_TYPE”, “CATEGORY”, “TOR_F_SCALE”, “TOR_LENGTH”, “TOR_WIDTH”, “TOR_OTHER_WFO”, “TOR_OTHER_CZ_STATE”, “TOR_OTHER_CZ_FIPS”, and “TOR_OTHER_CZ_NAME” has all values of NA or blank.</p>
-<p>Then we work the same thing in the data of 2021.</p>
-<p>Now we can begin our EDA.</p>
-<p>First, we have a bar plot to show the appearance of these four event type</p>
+<p>First, we identify the type of event_type relates to flood. We choose “Flash Flood”, “Flood”, “Coastal Flood”, “Lakeshore Flood” as our new Event_type variable</p>
+<p>Then we check if all the data here has the Year equals 2020. We prove that all the values are in 2020</p>
+<p>Then we check which columns has value with all blank or NA, and clean it.We find “MAGNITUDE”, “MAGNITUDE_TYPE”, “CATEGORY”, “TOR_F_SCALE”, “TOR_LENGTH”, “TOR_WIDTH”, “TOR_OTHER_WFO”, “TOR_OTHER_CZ_STATE”, “TOR_OTHER_CZ_FIPS”, and “TOR_OTHER_CZ_NAME” has all values of NA or blank.</p>
+<p>Now we can begin our EDA. First, we have a bar plot to show the appearance of these four event type</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="615_midterm_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+<p><img src="615_midterm_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>It is clear that “Flash Flood” and “Flood” have a dominant position compared to “Coastal Flood” and “Lakeshore Flood”. But it is also clear that the number of “Flash flood” in 2021 is much bigger than the number of “Flash Flood” in 2020.</p>
 <p>Then we consider which Flood will bring the biggest value of injuries and deaths</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="615_midterm_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+<p><img src="615_midterm_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>For Injuries_Direct, “Flash Flood” has a dominant position over others in both 2020 and 2021.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="615_midterm_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Since the amount of Injuries_Indirect is not a lot, we can not say there is a big difference between 2020 and 2021 though the distribution is different.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="615_midterm_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>For Deaths_Direct, “Flash Flood” has a dominant position over others in both 2020 and 2021.</p>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="615_midterm_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Since the amount of Injuries_Indirect is not a lot, we can not say there is a big difference between 2020 and 2021 though the distribution is different.</p>
+<p>As a short summary, the distribution for 2020 and 2021 is pretty similar. For Direct Injuries and Deaths, we can say “Flash Flood” is very dangerous since it has a dominant position among all the type of event. For Indirect Injuries and Deaths, we can not have any conclusion with it since the total count is too small and the distribution is different in 2020 and 2021. If we want to see which flood is dangerous, we can see the direct value for either Injuries and Deaths.</p>
+<p>After that, we are going to work with the distribution between Event_Type and Damage_property/Damage_Crops</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="615_midterm_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+<p><img src="615_midterm_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>For Deaths_Direct, “Flash Flood” has a dominant position over others in both 2020 and 2021.</p>
+<p>We can see the Damage for Property is pretty different between 2020 and 2021. In 2020, February has a dominant position but January, April, May, and September have a similar value. In 2021, July has a dominant position but June, August, and September have a similar value. We can say in 2021, the damage of property is heacily in a range of June to October, which can be concluded as summer. But in 2020, it doesn’t seem like we have a conclusion in damage of property.</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="615_midterm_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
+<p><img src="615_midterm_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>Since the amount of Injuries_Indirect is not a lot, we can not say there is a big difference between 2020 and 2021 though the distribution is different.</p>
+<p>We can see the damage of crops is similar for both 2020 and 2021, and we can make a hypothesis that in June, July, and August, the damage on crops is the most heavy among the whole year.</p>
+<p>Then we want to find if there is any relationship between flood and the communities.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="615_midterm_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>We can see most of the flood happens in CST-6 and EST-5 on both 2020 and 2021, we can suppose these two timezone has the biggest probability to get flood.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>       List1.Var1 List1.Freq   List2.Var1 List2.Freq
+1        VIRGINIA        635        TEXAS        505
+2        MISSOURI        453     NEW YORK        454
+3  NORTH CAROLINA        403      ARIZONA        410
+4         GEORGIA        313     VIRGINIA        405
+5        KENTUCKY        300     KENTUCKY        396
+6            OHIO        299     MISSOURI        344
+7        ILLINOIS        285 PENNSYLVANIA        298
+8         FLORIDA        269     MARYLAND        272
+9        ARKANSAS        256   NEW JERSEY        272
+10       MARYLAND        255    TENNESSEE        243</code></pre>
+</div>
+</div>
+<p>Just look at the list, I list the top ten value between State. Only Arizona is not in the CST-6 and EST-5, and it occurs in MST-7. It is interesting because in 2020, MST-7 doesn’t have such a high value than the value in 2021. So we may have a hypothesis that Arizona experiences an unusual Flood in 2021. For other States, we can make a conclusion as previous that most of the flood happens in CST-6 and EST-5.</p>
 
 </main>
 <!-- /main column -->

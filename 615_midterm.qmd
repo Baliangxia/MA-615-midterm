@@ -34,37 +34,7 @@ l_2021<-read.csv("locations_2021.csv",header = TRUE)
 fema<-read.csv("FemaWebDisasterSummaries.csv",header = TRUE)
 disaster<-read.csv("DisasterDeclarationsSummaries.csv",header = TRUE)
 ```
-#We have two FEMA Data, one is "FemaWebDisasterSummaries" and another is "DisasterDeclarationSummaries".
-
-Here is the output for FemaWebDisasterSummaries.
-```{r}
-#| echo: false
-fema_data <- data.frame(
-  VariableName = c("disasterNumber", "totalNumberIaApproved", "totalAmountIhpApproved","totalAmountHaApproved","totalAmountOnaApproved","totalObligatedAmountPa","totalObligatedAmountCatAb","totalObligatedAmountCatC2g","paLoadDate","iaLoadDate","totalObligatedAmountHmgp","hash","lastRefresh","id"),
-  Description = c("a sequentially assigned number used to designate an event or incident declared as a disaster", "the number of disaster assistance applications that were approved for Individual Assistance (IA)", "the total amount approved for the Individual and Households Program (IHP) in dollars","the total amount approved for Housing Assistance (HA) from the Individual and Households Program (IHP) in dollars","the total amount approved for Other Needs Assistance (ONA) from the Individual and Households Program (IHP) in dollars","the Public Assistance grant funding available in dollars to the grantee (State), for sub-grantee approved Project Worksheets","the Public Assistance grant funding available in dollars to the grantee (State), for sub-grantee approved Project Worksheets in categories A and B, or Emergency Work","the Public Assistance grant funding available in dollars to the grantee (State), for sub-grantee approved Project Worksheets in categories C through G, or Permanent Work","the date the Public Assistance (PA) data was updated by NEMIS"," the date the Individual Assistance (IA) data was updated by NEMIS","the total amount obligated under the Hazard Mitigation Grant Program in dollars","the MD5 hash of fields and values of the record","the date the record was last updated in the API data store","the unique ID assigned to the record	")
-)
-fema_table <- kable(fema_data, "simple")
-print(fema_table)
-```
-
-Here is the output for DisasterDeclarationSummaries.
-
-```{r}
-#| echo: false
-disaster_data <- data.frame(
-  VariableName = c("femaDeclarationString","disasterNumber","state","declarationType","declarationDate","fyDeclared","incidentType","declarationTitle","ihProgramDeclared","iaProgramDeclared","paProgramDeclared","hmProgramDeclared","incidentBeginDate","incidentEndDate","disasterCloseoutDate","tribalRequest","fipsStateCode","fipsCountyCode","placeCode","designatedArea","declarationRequestNumber","lastIAFilingDate","lastRefresh","hash","id"),
-  Descrption=c("Agency standard method for uniquely identifying Stafford Act declarations - Concatenation of declaration type, disaster number and state code","Sequentially assigned number used to designate an event or incident declared as a disaster","The name or phrase describing the U.S. state, district, or territory","Two character code that defines if this is a major disaster, fire management, or emergency declaration","Two character code that defines if this is a major disaster, fire management, or emergency declaration","Fiscal year in which the disaster was declared	","Type of incident such as fire or flood","Title for the disaster","Denotes whether the Individuals and Households program was declared for this disaster","Denotes whether the Individual Assistance program was declared for this disaster","Denotes whether the Public Assistance program was declared for this disaster","Denotes whether the Hazard Mitigation program was declared for this disaster","Date the incident itself began","Date the incident itself ended","Date all financial transactions for all programs are completed","Denotes that a declaration request was submitted directly to the President, independently of a state, by a Tribal Nation","FIPS two-digit numeric code used to identify the United States, the District of Columbia, US territories, outlying areas of the US and freely associated states","FIPS three-digit numeric code used to identify counties and county equivalents in the United States, the District of Columbia, US territories, outlying areas of the US and freely associated states","A unique code system FEMA uses internally to recognize locations that takes the numbers '99' + the 3-digit county FIPS code","The name or phrase describing the geographic area that was included in the declaration","Number assigned to the declaration request","Last date when IA requests can be filed. Data available after 1998 only","Date the record was last updated in the API data store","MD5 Hash of the fields and values of the record","MD5 Hash of the fields and values of the record")
-)
-disaster_table <- kable(disaster_data, "simple")
-print(disaster_table)
-```
-#Then we work on with our NOAA Data
-
-First, we identify the type of event_type relates to flood in data 2020.
-
-We choose "Flash Flood", "Flood", "Coastal Flood", "Lakeshore Flood" as our new Event_type variable
-
-
+First, we identify the type of event_type relates to flood. We choose "Flash Flood", "Flood", "Coastal Flood", "Lakeshore Flood" as our new Event_type variable
 ```{r}
 #| echo: false
 event_types <- c(unique(d_2020$EVENT_TYPE))
@@ -73,24 +43,18 @@ related_var <- c(related)
 tidy_d2020<-d_2020 %>%
   filter(EVENT_TYPE %in% related_var)
 ```
-Then we check if all the data here has the Year equals 2020.
-
-We prove that all the values are in 2020
+Then we check if all the data here has the Year equals 2020. We prove that all the values are in 2020
 ```{r}
 #| echo: false
 not_2020<-any(d_2020$YEAR !=2020)
 ```
-Then we check which columns has value with all blank or NA, and clean it. 
-
-We find "MAGNITUDE", "MAGNITUDE_TYPE", "CATEGORY", "TOR_F_SCALE", "TOR_LENGTH", "TOR_WIDTH", "TOR_OTHER_WFO", "TOR_OTHER_CZ_STATE", "TOR_OTHER_CZ_FIPS", and  "TOR_OTHER_CZ_NAME" has all values of NA or blank.
-
+Then we check which columns has value with all blank or NA, and clean it.We find "MAGNITUDE", "MAGNITUDE_TYPE", "CATEGORY", "TOR_F_SCALE", "TOR_LENGTH", "TOR_WIDTH", "TOR_OTHER_WFO", "TOR_OTHER_CZ_STATE", "TOR_OTHER_CZ_FIPS", and  "TOR_OTHER_CZ_NAME" has all values of NA or blank.
 ```{r}
 #| echo: false
 b_na <- colSums(is.na(tidy_d2020) | tidy_d2020 == "") == nrow(tidy_d2020)
 col_na <- names(b_na[b_na])
 tidy1_d2020 <- tidy_d2020[, !(names(tidy_d2020) %in% col_na)]
 ```
-Then we work the same thing in the data of 2021.
 
 ```{r}
 #| echo: false
@@ -104,14 +68,12 @@ b1_na <- colSums(is.na(tidy_d2021) | tidy_d2021 == "") == nrow(tidy_d2021)
 col1_na <- names(b1_na[b1_na])
 tidy1_d2021 <- tidy_d2021[, !(names(tidy_d2021) %in% col1_na)]
 ```
-Now we can begin our EDA. 
-
-First, we have a bar plot to show the appearance of these four event type
+Now we can begin our EDA. First, we have a bar plot to show the appearance of these four event type
 ```{r}
 #| echo: false
 distr_2020<-ggplot(tidy1_d2020) +
   aes(x = EVENT_TYPE) +
-  geom_bar(fill = "#4682B4") +
+  geom_bar(fill = "skyblue") +
   labs(
     x = "Type of Flood",
     y = "Counts",
@@ -126,7 +88,7 @@ distr_2020<-ggplot(tidy1_d2020) +
   )
 distr_2021<-ggplot(tidy1_d2021) +
   aes(x = EVENT_TYPE) +
-  geom_bar(fill = "#4682B4") +
+  geom_bar(fill = "skyblue") +
   labs(
     x = "Type of Flood",
     y = "Counts",
@@ -145,12 +107,11 @@ grid.arrange(distr_2020,distr_2021, ncol = 2)
 It is clear that "Flash Flood" and "Flood" have a dominant position compared to "Coastal Flood" and "Lakeshore Flood". But it is also clear that the number of "Flash flood" in 2021 is much bigger than the number of "Flash Flood" in 2020.
 
 Then we consider which Flood will bring the biggest value of injuries and deaths
-
 ```{r}
 #| echo: false
 ID_2020<-ggplot(tidy1_d2020) +
   aes(x = EVENT_TYPE, weight = INJURIES_DIRECT) +
-  geom_bar(fill = "#4682B4") +
+  geom_bar(fill = "skyblue") +
   labs(
     x = "Type of Flood",
     y = "Count for ID",
@@ -165,7 +126,7 @@ ID_2020<-ggplot(tidy1_d2020) +
   )
 II_2020<- ggplot(tidy1_d2020) +
   aes(x = EVENT_TYPE, weight = INJURIES_INDIRECT) +
-  geom_bar(fill = "#4682B4") +
+  geom_bar(fill = "skyblue") +
   labs(
     x = "Type of Flood",
     y = "Count for II",
@@ -180,7 +141,7 @@ II_2020<- ggplot(tidy1_d2020) +
   )
 DD_2020<-ggplot(tidy1_d2020) +
   aes(x = EVENT_TYPE, weight = DEATHS_DIRECT) +
-  geom_bar(fill = "#4682B4") +
+  geom_bar(fill = "skyblue") +
   labs(
     x = "Type of Flood",
     y = "Count for DD",
@@ -195,7 +156,7 @@ DD_2020<-ggplot(tidy1_d2020) +
   )
 DI_2020<-ggplot(tidy1_d2020) +
   aes(x = EVENT_TYPE, weight = DEATHS_INDIRECT) +
-  geom_bar(fill = "#4682B4") +
+  geom_bar(fill = "skyblue") +
   labs(
     x = "Type of Flood",
     y = "Count for DI",
@@ -214,7 +175,7 @@ DI_2020<-ggplot(tidy1_d2020) +
 #| echo: false
 ID_2021<-ggplot(tidy1_d2021) +
   aes(x = EVENT_TYPE, weight = INJURIES_DIRECT) +
-  geom_bar(fill = "#4682B4") +
+  geom_bar(fill = "skyblue") +
   labs(
     x = "Type of Flood",
     y = "Count for ID",
@@ -229,7 +190,7 @@ ID_2021<-ggplot(tidy1_d2021) +
   )
 II_2021<- ggplot(tidy1_d2021) +
   aes(x = EVENT_TYPE, weight = INJURIES_INDIRECT) +
-  geom_bar(fill = "#4682B4") +
+  geom_bar(fill = "skyblue") +
   labs(
     x = "Type of Flood",
     y = "Count for II",
@@ -244,7 +205,7 @@ II_2021<- ggplot(tidy1_d2021) +
   )
 DD_2021<-ggplot(tidy1_d2021) +
   aes(x = EVENT_TYPE, weight = DEATHS_DIRECT) +
-  geom_bar(fill = "#4682B4") +
+  geom_bar(fill = "skyblue") +
   labs(
     x = "Type of Flood",
     y = "Count for DD",
@@ -259,7 +220,7 @@ DD_2021<-ggplot(tidy1_d2021) +
   )
 DI_2021<-ggplot(tidy1_d2021) +
   aes(x = EVENT_TYPE, weight = DEATHS_INDIRECT) +
-  geom_bar(fill = "#4682B4") +
+  geom_bar(fill = "skyblue") +
   labs(
     x = "Type of Flood",
     y = "Count for DI",
@@ -279,22 +240,158 @@ DI_2021<-ggplot(tidy1_d2021) +
 grid.arrange(ID_2020,ID_2021, ncol = 2)
 ```
 For Injuries_Direct, "Flash Flood" has a dominant position over others in both 2020 and 2021. 
-
 ```{r}
 #| echo: false
 grid.arrange(II_2020,II_2021, ncol = 2)
 ```
 Since the amount of Injuries_Indirect is not a lot, we can not say there is a big difference between 2020 and 2021 though the distribution is different.
-
 ```{r}
 #| echo: false
 grid.arrange(DD_2020,DD_2021, ncol = 2)
 ```
 For Deaths_Direct, "Flash Flood" has a dominant position over others in both 2020 and 2021. 
-
 ```{r}
 #| echo: false
 grid.arrange(DI_2020,DI_2021, ncol = 2)
 ```
 Since the amount of Injuries_Indirect is not a lot, we can not say there is a big difference between 2020 and 2021 though the distribution is different.
 
+As a short summary, the distribution for 2020 and 2021 is pretty similar. For Direct Injuries and Deaths, we can say "Flash Flood" is very dangerous since it has a dominant position among all the type of event. For Indirect Injuries and Deaths, we can not have any conclusion with it since the total count is too small and the distribution is different in 2020 and 2021. If we want to see which flood is dangerous, we can see the direct value for either Injuries and Deaths.
+
+After that, we are going to work with the distribution between Event_Type and Damage_property/Damage_Crops
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+tidy1_d2020$DAMAGE_PROPERTY <- as.numeric(sub("K", "", tidy1_d2020$DAMAGE_PROPERTY), na.rm = TRUE)*1000
+tidy1_d2020$DAMAGE_CROPS <- as.numeric(sub("K", "", tidy1_d2020$DAMAGE_CROPS), na.rm = TRUE)*1000
+tidy1_d2021$DAMAGE_PROPERTY <- as.numeric(sub("K", "", tidy1_d2021$DAMAGE_PROPERTY), na.rm = TRUE)*1000
+tidy1_d2021$DAMAGE_CROPS <- as.numeric(sub("K", "", tidy1_d2021$DAMAGE_CROPS), na.rm = TRUE)*1000
+```
+
+```{r}
+#| echo: false
+months=c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+tidy1_d2020$MONTH_NAME=factor(tidy1_d2020$MONTH_NAME,levels=months,ordered=TRUE)
+tidy1_d2020=tidy1_d2020[order(tidy1_d2020$MONTH_NAME), ]
+tidy1_d2021$MONTH_NAME=factor(tidy1_d2021$MONTH_NAME,levels=months,ordered=TRUE)
+tidy1_d2021=tidy1_d2021[order(tidy1_d2021$MONTH_NAME), ]
+pro_2020<-ggplot(tidy1_d2020) +
+  aes(x = MONTH_NAME, weight = DAMAGE_PROPERTY) +
+  geom_bar(fill = "black") +
+labs(
+    x = "Number of Month",
+    y = "Damage of Property",
+    title = "Month Versus Property in 2020"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+pro_2021<-ggplot(tidy1_d2021) +
+  aes(x = MONTH_NAME, weight = DAMAGE_PROPERTY) +
+  geom_bar(fill = "black") +
+labs(
+    x = "Number of Month",
+    y = "Damage of Property",
+    title = "Month Versus Property in 2021"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+crop_2020<-ggplot(tidy1_d2020) +
+  aes(x = MONTH_NAME, weight = DAMAGE_CROPS) +
+  geom_bar(fill = "black") +
+labs(
+    x = "Number of Month",
+    y = "Damage of Crops",
+    title = "Month Versus Crops in 2020"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+crop_2021<-ggplot(tidy1_d2021) +
+  aes(x = MONTH_NAME, weight = DAMAGE_CROPS) +
+  geom_bar(fill = "black") +
+labs(
+    x = "Number of Month",
+    y = "Damage of Crops",
+    title = "Month Versus Crops in 2021"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+```
+
+```{r}
+#| echo: false
+grid.arrange(pro_2020,pro_2021, ncol = 2)
+```
+We can see the Damage for Property is pretty different between 2020 and 2021. In 2020, February has a dominant position but January, April, May, and September have a similar value. In 2021, July has a dominant position but June, August, and September have a similar value. We can say in 2021, the damage of property  is heacily in a range of June to October, which can be concluded as summer. But in 2020, it doesn't seem like we have a conclusion in damage of property.
+```{r}
+#| echo: false
+grid.arrange(crop_2020,crop_2021, ncol = 2)
+```
+We can see the damage of crops is similar for both 2020 and 2021, and we can make a hypothesis that in June, July, and August, the damage on crops is the most heavy among the whole year.
+
+Then we want to find if there is any relationship between flood and the communities.
+```{r}
+#| echo: false
+tz_2020<-ggplot(tidy1_d2020) +
+  aes(x = CZ_TIMEZONE) +
+  geom_bar(fill = "red") +
+ labs(
+    x = "Type of TimeZone",
+    y = "Count for TimeZone",
+    title = "TimeZone for 2020"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+tz_2021<-ggplot(tidy1_d2021) +
+  aes(x = CZ_TIMEZONE) +
+  geom_bar(fill = "red") +
+ labs(
+    x = "Type of TimeZone",
+    y = "Count for TimeZone",
+    title = "TimeZone for 2021"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+grid.arrange(tz_2020,tz_2021, ncol = 2)
+```
+We can see most of the flood happens in CST-6 and EST-5 on both 2020 and 2021, we can suppose these two timezone has the biggest probability to get flood.
+
+```{r}
+#| echo: false
+count_2020=table(tidy1_d2020$STATE)
+most_2020=head(sort(count_2020,decreasing=TRUE),10)
+count_2021=table(tidy1_d2021$STATE)
+most_2021=head(sort(count_2021,decreasing=TRUE),10)
+data.frame(List1=most_2020,List2=most_2021)
+```
+Just look at the list, I list the top ten value between State. Only Arizona is not in the CST-6 and EST-5, and it occurs in MST-7. It is interesting because in 2020, MST-7 doesn't have such a high value than the value in 2021. So we may have a hypothesis that Arizona experiences an unusual Flood in 2021. For other States, we can make a conclusion as previous that most of the flood happens in CST-6 and EST-5.
