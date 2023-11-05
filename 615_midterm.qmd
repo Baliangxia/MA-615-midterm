@@ -1,0 +1,300 @@
+---
+title: "615-midterm"
+author: "Chenghao Xia"
+format: 
+  html:
+    toc: true
+    code-fold: true
+editor: visual
+---
+
+```{r}
+#| label: Load libraries
+#| warning: false
+#| message: false
+#| echo: false
+library(dplyr)
+library(tidyverse)
+library(esquisse)
+library(rfema)
+library(knitr)
+library(kableExtra)
+library(patchwork)
+library(gridExtra)
+```
+
+```{r}
+#| echo: false
+d_2020<-read.csv("details_2020.csv",header = TRUE)
+d_2021<-read.csv("details_2021.csv",header = TRUE)
+f_2020<-read.csv("fatalities_2020.csv",header = TRUE)
+f_2021<-read.csv("fatalities_2021.csv",header = TRUE)
+l_2020<-read.csv("locations_2020.csv",header = TRUE)
+l_2021<-read.csv("locations_2021.csv",header = TRUE)
+fema<-read.csv("FemaWebDisasterSummaries.csv",header = TRUE)
+disaster<-read.csv("DisasterDeclarationsSummaries.csv",header = TRUE)
+```
+#We have two FEMA Data, one is "FemaWebDisasterSummaries" and another is "DisasterDeclarationSummaries".
+
+Here is the output for FemaWebDisasterSummaries.
+```{r}
+#| echo: false
+fema_data <- data.frame(
+  VariableName = c("disasterNumber", "totalNumberIaApproved", "totalAmountIhpApproved","totalAmountHaApproved","totalAmountOnaApproved","totalObligatedAmountPa","totalObligatedAmountCatAb","totalObligatedAmountCatC2g","paLoadDate","iaLoadDate","totalObligatedAmountHmgp","hash","lastRefresh","id"),
+  Description = c("a sequentially assigned number used to designate an event or incident declared as a disaster", "the number of disaster assistance applications that were approved for Individual Assistance (IA)", "the total amount approved for the Individual and Households Program (IHP) in dollars","the total amount approved for Housing Assistance (HA) from the Individual and Households Program (IHP) in dollars","the total amount approved for Other Needs Assistance (ONA) from the Individual and Households Program (IHP) in dollars","the Public Assistance grant funding available in dollars to the grantee (State), for sub-grantee approved Project Worksheets","the Public Assistance grant funding available in dollars to the grantee (State), for sub-grantee approved Project Worksheets in categories A and B, or Emergency Work","the Public Assistance grant funding available in dollars to the grantee (State), for sub-grantee approved Project Worksheets in categories C through G, or Permanent Work","the date the Public Assistance (PA) data was updated by NEMIS"," the date the Individual Assistance (IA) data was updated by NEMIS","the total amount obligated under the Hazard Mitigation Grant Program in dollars","the MD5 hash of fields and values of the record","the date the record was last updated in the API data store","the unique ID assigned to the record	")
+)
+fema_table <- kable(fema_data, "simple")
+print(fema_table)
+```
+
+Here is the output for DisasterDeclarationSummaries.
+
+```{r}
+#| echo: false
+disaster_data <- data.frame(
+  VariableName = c("femaDeclarationString","disasterNumber","state","declarationType","declarationDate","fyDeclared","incidentType","declarationTitle","ihProgramDeclared","iaProgramDeclared","paProgramDeclared","hmProgramDeclared","incidentBeginDate","incidentEndDate","disasterCloseoutDate","tribalRequest","fipsStateCode","fipsCountyCode","placeCode","designatedArea","declarationRequestNumber","lastIAFilingDate","lastRefresh","hash","id"),
+  Descrption=c("Agency standard method for uniquely identifying Stafford Act declarations - Concatenation of declaration type, disaster number and state code","Sequentially assigned number used to designate an event or incident declared as a disaster","The name or phrase describing the U.S. state, district, or territory","Two character code that defines if this is a major disaster, fire management, or emergency declaration","Two character code that defines if this is a major disaster, fire management, or emergency declaration","Fiscal year in which the disaster was declared	","Type of incident such as fire or flood","Title for the disaster","Denotes whether the Individuals and Households program was declared for this disaster","Denotes whether the Individual Assistance program was declared for this disaster","Denotes whether the Public Assistance program was declared for this disaster","Denotes whether the Hazard Mitigation program was declared for this disaster","Date the incident itself began","Date the incident itself ended","Date all financial transactions for all programs are completed","Denotes that a declaration request was submitted directly to the President, independently of a state, by a Tribal Nation","FIPS two-digit numeric code used to identify the United States, the District of Columbia, US territories, outlying areas of the US and freely associated states","FIPS three-digit numeric code used to identify counties and county equivalents in the United States, the District of Columbia, US territories, outlying areas of the US and freely associated states","A unique code system FEMA uses internally to recognize locations that takes the numbers '99' + the 3-digit county FIPS code","The name or phrase describing the geographic area that was included in the declaration","Number assigned to the declaration request","Last date when IA requests can be filed. Data available after 1998 only","Date the record was last updated in the API data store","MD5 Hash of the fields and values of the record","MD5 Hash of the fields and values of the record")
+)
+disaster_table <- kable(disaster_data, "simple")
+print(disaster_table)
+```
+#Then we work on with our NOAA Data
+
+First, we identify the type of event_type relates to flood in data 2020.
+
+We choose "Flash Flood", "Flood", "Coastal Flood", "Lakeshore Flood" as our new Event_type variable
+
+
+```{r}
+#| echo: false
+event_types <- c(unique(d_2020$EVENT_TYPE))
+related <- event_types[grepl("Flood", event_types)]
+related_var <- c(related)
+tidy_d2020<-d_2020 %>%
+  filter(EVENT_TYPE %in% related_var)
+```
+Then we check if all the data here has the Year equals 2020.
+
+We prove that all the values are in 2020
+```{r}
+#| echo: false
+not_2020<-any(d_2020$YEAR !=2020)
+```
+Then we check which columns has value with all blank or NA, and clean it. 
+
+We find "MAGNITUDE", "MAGNITUDE_TYPE", "CATEGORY", "TOR_F_SCALE", "TOR_LENGTH", "TOR_WIDTH", "TOR_OTHER_WFO", "TOR_OTHER_CZ_STATE", "TOR_OTHER_CZ_FIPS", and  "TOR_OTHER_CZ_NAME" has all values of NA or blank.
+
+```{r}
+#| echo: false
+b_na <- colSums(is.na(tidy_d2020) | tidy_d2020 == "") == nrow(tidy_d2020)
+col_na <- names(b_na[b_na])
+tidy1_d2020 <- tidy_d2020[, !(names(tidy_d2020) %in% col_na)]
+```
+Then we work the same thing in the data of 2021.
+
+```{r}
+#| echo: false
+event1_types <- c(unique(d_2021$EVENT_TYPE))
+related1 <- event1_types[grepl("Flood", event1_types)]
+related1_var <- c(related1)
+tidy_d2021<-d_2021 %>%
+  filter(EVENT_TYPE %in% related1_var)
+not_2021<-any(tidy_d2021$YEAR !=2021)
+b1_na <- colSums(is.na(tidy_d2021) | tidy_d2021 == "") == nrow(tidy_d2021)
+col1_na <- names(b1_na[b1_na])
+tidy1_d2021 <- tidy_d2021[, !(names(tidy_d2021) %in% col1_na)]
+```
+Now we can begin our EDA. 
+
+First, we have a bar plot to show the appearance of these four event type
+```{r}
+#| echo: false
+distr_2020<-ggplot(tidy1_d2020) +
+  aes(x = EVENT_TYPE) +
+  geom_bar(fill = "#4682B4") +
+  labs(
+    x = "Type of Flood",
+    y = "Counts",
+    title = "Event Type Distribution for 2020"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+distr_2021<-ggplot(tidy1_d2021) +
+  aes(x = EVENT_TYPE) +
+  geom_bar(fill = "#4682B4") +
+  labs(
+    x = "Type of Flood",
+    y = "Counts",
+    title = "Event Type Distribution for 2021"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold",hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+grid.arrange(distr_2020,distr_2021, ncol = 2)
+```
+
+It is clear that "Flash Flood" and "Flood" have a dominant position compared to "Coastal Flood" and "Lakeshore Flood". But it is also clear that the number of "Flash flood" in 2021 is much bigger than the number of "Flash Flood" in 2020.
+
+Then we consider which Flood will bring the biggest value of injuries and deaths
+
+```{r}
+#| echo: false
+ID_2020<-ggplot(tidy1_d2020) +
+  aes(x = EVENT_TYPE, weight = INJURIES_DIRECT) +
+  geom_bar(fill = "#4682B4") +
+  labs(
+    x = "Type of Flood",
+    y = "Count for ID",
+    title = "Injuries_Direct for 2020"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+II_2020<- ggplot(tidy1_d2020) +
+  aes(x = EVENT_TYPE, weight = INJURIES_INDIRECT) +
+  geom_bar(fill = "#4682B4") +
+  labs(
+    x = "Type of Flood",
+    y = "Count for II",
+    title = "Injuries_Indirect for 2020"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+DD_2020<-ggplot(tidy1_d2020) +
+  aes(x = EVENT_TYPE, weight = DEATHS_DIRECT) +
+  geom_bar(fill = "#4682B4") +
+  labs(
+    x = "Type of Flood",
+    y = "Count for DD",
+    title = "Deaths_Direct for 2020"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+DI_2020<-ggplot(tidy1_d2020) +
+  aes(x = EVENT_TYPE, weight = DEATHS_INDIRECT) +
+  geom_bar(fill = "#4682B4") +
+  labs(
+    x = "Type of Flood",
+    y = "Count for DI",
+    title = "Deaths_Indirect for 2020"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+```
+
+```{r}
+#| echo: false
+ID_2021<-ggplot(tidy1_d2021) +
+  aes(x = EVENT_TYPE, weight = INJURIES_DIRECT) +
+  geom_bar(fill = "#4682B4") +
+  labs(
+    x = "Type of Flood",
+    y = "Count for ID",
+    title = "Injuries_Direct for 2021"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+II_2021<- ggplot(tidy1_d2021) +
+  aes(x = EVENT_TYPE, weight = INJURIES_INDIRECT) +
+  geom_bar(fill = "#4682B4") +
+  labs(
+    x = "Type of Flood",
+    y = "Count for II",
+    title = "Injuries_Indirect for 2021"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+DD_2021<-ggplot(tidy1_d2021) +
+  aes(x = EVENT_TYPE, weight = DEATHS_DIRECT) +
+  geom_bar(fill = "#4682B4") +
+  labs(
+    x = "Type of Flood",
+    y = "Count for DD",
+    title = "Deaths_Direct for 2021"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+DI_2021<-ggplot(tidy1_d2021) +
+  aes(x = EVENT_TYPE, weight = DEATHS_INDIRECT) +
+  geom_bar(fill = "#4682B4") +
+  labs(
+    x = "Type of Flood",
+    y = "Count for DI",
+    title = "Deaths_Indirect for 2021"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14L, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 11L, face = "bold"),
+    axis.title.x = element_text(size = 11L, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+```
+
+```{r}
+#| echo: false
+grid.arrange(ID_2020,ID_2021, ncol = 2)
+```
+For Injuries_Direct, "Flash Flood" has a dominant position over others in both 2020 and 2021. 
+
+```{r}
+#| echo: false
+grid.arrange(II_2020,II_2021, ncol = 2)
+```
+Since the amount of Injuries_Indirect is not a lot, we can not say there is a big difference between 2020 and 2021 though the distribution is different.
+
+```{r}
+#| echo: false
+grid.arrange(DD_2020,DD_2021, ncol = 2)
+```
+For Deaths_Direct, "Flash Flood" has a dominant position over others in both 2020 and 2021. 
+
+```{r}
+#| echo: false
+grid.arrange(DI_2020,DI_2021, ncol = 2)
+```
+Since the amount of Injuries_Indirect is not a lot, we can not say there is a big difference between 2020 and 2021 though the distribution is different.
+
